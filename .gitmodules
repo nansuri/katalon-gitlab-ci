@@ -1,0 +1,3 @@
+[submodule "gitlab-ci"]
+	path = gitlab-ci
+	url = http://172.31.12.66/fintech-te-group/gitlab-ci.git

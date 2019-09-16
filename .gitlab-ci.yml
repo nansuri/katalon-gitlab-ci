@@ -1,0 +1,36 @@
+stages:
+  - execute_test
+
+execute_test:
+    stage: execute_test
+    
+    variables:
+      KATALON_API_KEY : "7186c00e-a0a8-4aa7-a2dc-c6239b6b65e1"
+      GIT_SUBMODULE_STRATEGY: normal
+
+    before_script:
+    - chmod +x $(pwd)/gitlab-ci/executor_message.sh
+    - $(pwd)/gitlab-ci/executor_message.sh $TEST_SUITE $BROWSER_TYPE $UPDATE_DRIVER $EXECUTION_PROFILE
+      
+    script: 
+    - chmod +x $(pwd)/gitlab-ci/docker_test.sh $(pwd)/gitlab-ci/report_engine.sh $(pwd)/gitlab-ci/commit_parser.sh
+    - $(pwd)/gitlab-ci/commit_parser.sh $KATALON_API_KEY
+    
+    after_script:
+    - $(pwd)/gitlab-ci/report_engine.sh $CI_COMMIT_REF_NAME
+    - tar -zcvf report.tar.gz report 
+    allow_failure: false
+     
+    artifacts:
+      when: always
+      paths:
+      - report.tar.gz
+      expire_in: 3 days
+      reports:
+        junit: report/JUnit_Report.xml 
+    only:
+      variables:
+        - $CI_COMMIT_MESSAGE =~ /execute_ci/
+    tags:
+    - first-runner
+    - all-runner
